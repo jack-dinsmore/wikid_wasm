@@ -67,15 +67,15 @@ impl Applet {
             element.draw(&mut self.buffer, &self.style);
         }
 
-        // Rim
-        for i in 0..self.width {
-            self.buffer[(i, 0)] = BLACK;
-            self.buffer[(i, self.height-1)] = BLACK;
-        }
-        for j in 0..self.height {
-            self.buffer[(0, j)] = BLACK;
-            self.buffer[(self.width-1, j)] = BLACK;
-        }
+        // Border
+        // for i in 0..self.width {
+        //     self.buffer[(i, 0)] = BLACK;
+        //     self.buffer[(i, self.height-1)] = BLACK;
+        // }
+        // for j in 0..self.height {
+        //     self.buffer[(0, j)] = BLACK;
+        //     self.buffer[(self.width-1, j)] = BLACK;
+        // }
 
         // Commit image buffer to the canvas
         let window = web_sys::window().unwrap();
