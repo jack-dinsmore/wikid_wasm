@@ -173,7 +173,7 @@ impl DynamicPlot {
                         for i in left..right {
                             let frac = (i - left) as f32 / (right - left) as f32;
                             let j_top = (ul + frac * (ur - ul)).min((self.height - self.border_y) as f32);
-                            let j_bot = ll + frac * (lr - ll).max(0.);
+                            let j_bot = (ll + frac * (lr - ll)).max(0.);
                             for j in (j_bot.floor() as u32-1)..=(j_top.ceil() as u32+1) {
                                 let empty = self.pixels[(i, j)];
                                 if j >= j_bot.ceil() as u32 && j <= j_top.floor() as u32 {
