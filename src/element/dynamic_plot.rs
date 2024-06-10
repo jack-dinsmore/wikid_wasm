@@ -153,9 +153,6 @@ impl DynamicPlot {
                             self.unprotected_data_to_axis((xs[i+1], y1s[i+1])),
                             self.unprotected_data_to_axis((xs[i+1], y2s[i+1])),
                         );
-                        // if left.0.is_none() || left.1.is_none() || right.0.is_none() || right.1.is_none() {
-                        //     continue;
-                        // }
                         let left = (
                             self.axis_to_pixel(left.0),
                             self.axis_to_pixel(left.1)
@@ -173,7 +170,7 @@ impl DynamicPlot {
                         for i in left..right {
                             let frac = (i - left) as f32 / (right - left) as f32;
                             let j_top = (ul + frac * (ur - ul)).min((self.height - self.border_y) as f32);
-                            let j_bot = (ll + frac * (lr - ll)).max(0.);
+                            let j_bot = (ll + frac * (lr - ll)).max(1.);
                             for j in (j_bot.floor() as u32-1)..=(j_top.ceil() as u32+1) {
                                 let empty = self.pixels[(i, j)];
                                 if j >= j_bot.ceil() as u32 && j <= j_top.floor() as u32 {
