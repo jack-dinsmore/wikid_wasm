@@ -5,7 +5,7 @@ use image::ImageBuffer;
 use wasm_bindgen::{prelude::*, Clamped};
 use web_sys::ImageData;
 
-use super::{element::{Element, EventResponse, Mouse}, style::{BLACK, WHITE}, Style};
+use super::{element::{Element, EventResponse, Mouse}, style::WHITE, Style};
 
 pub enum Callback {
     ButtonClicked(*const super::element::Button),

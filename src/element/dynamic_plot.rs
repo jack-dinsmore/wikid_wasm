@@ -69,8 +69,8 @@ impl DynamicPlot {
                 PlotCommand::Scatter { xs, ys } => {
                     for i in 0..xs.len() {
                         let point = match self.data_to_axis((xs[i], ys[i])) {
-                            Some(p) => p,
-                            None => continue
+                            Ok(p) => p,
+                            Err(_) => continue
                         };
                         self.draw_disk(point, style.point_radius, style.highlight_color);
                         self.draw_circle(point, style.point_radius, BLACK);
@@ -81,12 +81,12 @@ impl DynamicPlot {
                     let mut plot_dash = true;
                     for i in 0..(xs.len()-1) {
                         let point_1 = match self.data_to_axis((xs[i], ys[i])) {
-                            Some(p) => p,
-                            None => continue
+                            Ok(p) => p,
+                            Err(_) => continue
                         };
                         let point_2 = match self.data_to_axis((xs[i+1], ys[i+1])) {
-                            Some(p) => p,
-                            None => continue
+                            Ok(p) => p,
+                            Err(_) => continue
                         };
                         match ls {
                             LineStyle::Solid => {
@@ -128,16 +128,16 @@ impl DynamicPlot {
                 PlotCommand::ErrorBar { xs, ys, y_errs } => {
                     for i in 0..xs.len() {
                         let center_axis = match self.data_to_axis((xs[i], ys[i])) {
-                            Some(p) => p,
-                            None => continue
+                            Ok(p) => p,
+                            Err(_) => continue
                         };
                         let down = match self.data_to_axis((xs[i], ys[i]-y_errs[i])) {
-                            Some(p) => self.axis_to_pixel(p),
-                            None => self.axis_to_pixel((center_axis.0, 0.)),
+                            Ok(p) => self.axis_to_pixel(p),
+                            Err(_) => self.axis_to_pixel((center_axis.0, 0.)),
                         };
                         let up = match self.data_to_axis((xs[i], ys[i]+y_errs[i])) {
-                            Some(p) => self.axis_to_pixel(p),
-                            None => self.axis_to_pixel((center_axis.0, 1.)),
+                            Ok(p) => self.axis_to_pixel(p),
+                            Err(_) => self.axis_to_pixel((center_axis.0, 1.)),
                         };
                         self.draw_v_line(down.0.round() as u32, (down.1.round() as u32, up.1.round() as u32), 1, BLACK);
                     }
@@ -146,23 +146,23 @@ impl DynamicPlot {
                     let alpha = 0.3;
                     for i in 0..xs.len()-1 {
                         let left = (
-                            self.data_to_axis((xs[i], y1s[i])),
-                            self.data_to_axis((xs[i], y2s[i])),
+                            self.unprotected_data_to_axis((xs[i], y1s[i])),
+                            self.unprotected_data_to_axis((xs[i], y2s[i])),
                         );
                         let right = (
-                            self.data_to_axis((xs[i+1], y1s[i+1])),
-                            self.data_to_axis((xs[i+1], y2s[i+1])),
+                            self.unprotected_data_to_axis((xs[i+1], y1s[i+1])),
+                            self.unprotected_data_to_axis((xs[i+1], y2s[i+1])),
                         );
-                        if left.0.is_none() || left.1.is_none() || right.0.is_none() || right.1.is_none() {
-                            continue;
-                        }
+                        // if left.0.is_none() || left.1.is_none() || right.0.is_none() || right.1.is_none() {
+                        //     continue;
+                        // }
                         let left = (
-                            self.axis_to_pixel(left.0.unwrap()),
-                            self.axis_to_pixel(left.1.unwrap())
+                            self.axis_to_pixel(left.0),
+                            self.axis_to_pixel(left.1)
                         );
                         let right = (
-                            self.axis_to_pixel(right.0.unwrap()),
-                            self.axis_to_pixel(right.1.unwrap())
+                            self.axis_to_pixel(right.0),
+                            self.axis_to_pixel(right.1)
                         );
                         let ul = left.0.1.max(left.1.1);
                         let ll = left.0.1.min(left.1.1);
@@ -187,7 +187,7 @@ impl DynamicPlot {
                         }
                     }
                 },
-                PlotCommand::Legend { labels } => {
+                PlotCommand::Legend { .. } => {
                     unimplemented!();
                 },
                 PlotCommand::Text { x, y, text, va, ha } => {
@@ -343,14 +343,22 @@ impl DynamicPlot {
         }
     }
 
-    fn data_to_axis(&self, pos: (f32, f32)) -> Option<(f32, f32)> {
-        if pos.0 < self.x_lim.0 || pos.0 > self.x_lim.1 || pos.1 < self.y_lim.0 || pos.1 > self.y_lim.1 {
-            return None;
-        }
-        Some((
+    fn data_to_axis(&self, pos: (f32, f32)) -> Result<(f32, f32),(f32, f32)> {
+        let answer=(
             (pos.0 - self.x_lim.0) / (self.x_lim.1 - self.x_lim.0),
             (pos.1 - self.y_lim.0) / (self.y_lim.1 - self.y_lim.0)
-        ))
+        );
+        if pos.0 < self.x_lim.0 || pos.0 > self.x_lim.1 || pos.1 < self.y_lim.0 || pos.1 > self.y_lim.1 {
+            return Err(answer);
+        }
+        Ok(answer)
+    }
+    
+    fn unprotected_data_to_axis(&self, pos: (f32, f32)) -> (f32,f32) {
+        match self.data_to_axis(pos) {
+            Ok(p) => p,
+            Err(p) => p,
+        }
     }
 
     fn axis_to_pixel(&self, pos: (f32, f32)) -> (f32, f32) {
