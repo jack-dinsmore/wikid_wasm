@@ -119,6 +119,8 @@ impl DynamicPlot {
                     }
                 },
                 PlotCommand::Bar { edges, ys } => {
+                    let zero = self.data_to_axis((edges[0], 0.)).unwrap();
+                    let mut previous_right = zero;
                     for i in 0..(edges.len()-1) {
                         let left = match self.data_to_axis((edges[i], ys[i])) {
                             Ok(p) => p,
@@ -128,8 +130,11 @@ impl DynamicPlot {
                             Ok(p) => p,
                             Err(_) => continue
                         };
+                        self.draw_line(previous_right, left, style.line_width, BLACK);
                         self.draw_line(left, right, style.line_width, BLACK);
+                        previous_right = right;
                     }
+                    self.draw_line(previous_right, zero, style.line_width, BLACK);
                 },
                 PlotCommand::SetXLabel { label } => {
                     style.render_text(&mut self.pixels, self.border_x + (self.width - self.border_x)/2, self.height - self.border_y / 2, &label, BLACK, TextAlign::Center, TextAlign::Center);
