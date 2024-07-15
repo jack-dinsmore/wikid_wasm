@@ -31,6 +31,7 @@ pub enum PlotCommand<'a> {
     ErrorBar{xs: &'a[f32], ys: &'a[f32], y_errs: &'a[f32]},
     FillBetween{xs: &'a[f32], y1s: &'a[f32], y2s: &'a[f32]},
     Line{xs: &'a[f32], ys: &'a[f32], ls: LineStyle},
+    Bar{edges: &'a[f32], ys: &'a[f32]},
     SetXLim{low: f32, high: f32},
     SetYLim{low: f32, high: f32},
     SetXLabel{label: String},
@@ -115,6 +116,19 @@ impl DynamicPlot {
                                 unimplemented!();
                             }
                         }
+                    }
+                },
+                PlotCommand::Bar { edges, ys } => {
+                    for i in 0..(edges.len()-1) {
+                        let left = match self.data_to_axis((edges[i], ys[i])) {
+                            Ok(p) => p,
+                            Err(_) => continue
+                        };
+                        let right = match self.data_to_axis((edges[i+1], ys[i])) {
+                            Ok(p) => p,
+                            Err(_) => continue
+                        };
+                        self.draw_line(left, right, style.line_width, BLACK);
                     }
                 },
                 PlotCommand::SetXLabel { label } => {
