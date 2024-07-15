@@ -126,11 +126,11 @@ impl DynamicPlot {
                     for i in 0..(edges.len()-1) {
                         let left = match self.data_to_axis((edges[i], ys[i])) {
                             Ok(p) => p,
-                            Err(_) => p
+                            Err(p) => p,
                         };
                         let right = match self.data_to_axis((edges[i+1], ys[i])) {
                             Ok(p) => p,
-                            Err(_) => p
+                            Err(p) => p,
                         };
                         self.draw_line(previous_right, left, style.line_width, BLACK);
                         self.draw_line(left, right, style.line_width, BLACK);
